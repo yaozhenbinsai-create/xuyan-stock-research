@@ -1,0 +1,55 @@
+/* dashboard.css: 序研 shell (sidebar groups, collapsible rail). Loaded after every older stylesheet, so selectors lead with #navigation to win on specificity. Tokens use the --xy- prefix so older pages keep their own variables until they are migrated. */
+:root{--xy-surface:#11151f;--xy-raised:#161b28;--xy-line:#222a3a;--xy-ink:#e8e6df;--xy-ink-2:#b8b6ad;--xy-ink-3:#7a8295;--xy-ink-4:#525c70;--xy-gold:#f5b544;--xy-glow:rgba(245,181,68,.4);--xy-ease:cubic-bezier(.22,1,.36,1)}
+aside.sidebar{background:var(--xy-surface);border-right:1px solid var(--xy-line);color:var(--xy-ink-2)}
+aside.sidebar .brand{color:var(--xy-gold)}
+aside.sidebar .local-label{color:var(--xy-ink-4);border-top-color:var(--xy-line)}
+aside.sidebar .small-dot{background:#52d9a4;box-shadow:0 0 6px rgba(82,217,164,.6)}
+.rail-toggle{display:flex;align-items:center;gap:10px;width:100%;min-height:36px;padding:0 12px;border:1px solid var(--xy-line);border-radius:8px;background:none;color:var(--xy-ink-3);font:inherit;font-size:12px;cursor:pointer;transition:color .2s var(--xy-ease),border-color .2s var(--xy-ease)}
+.rail-toggle:hover{color:var(--xy-ink);border-color:#2e3850}
+.rail-toggle i{flex:none;width:7px;height:7px;margin:0 3px;border-left:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg);transition:transform .26s var(--xy-ease)}
+.sidebar #navigation :focus-visible,.rail-toggle:focus-visible{outline:2px solid var(--xy-gold);outline-offset:2px}
+
+@media(min-width:761px){
+  .shell,aside.sidebar{transition:margin-left .26s var(--xy-ease),width .26s var(--xy-ease)}
+  .sidebar #navigation{gap:4px;margin-top:22px}
+  .sidebar #navigation .nav-group{gap:0}
+  .sidebar #navigation .nav-group+.nav-group{margin-top:6px;padding-top:6px;border-top:1px solid var(--xy-line)}
+  .sidebar #navigation .nav-group-title{display:flex;align-items:center;justify-content:space-between;width:100%;padding:8px 10px;border:0;border-radius:6px;background:none;color:var(--xy-ink-4);font:inherit;font-size:11.5px;font-weight:600;letter-spacing:.04em;text-align:left;cursor:pointer;transition:color .2s var(--xy-ease)}
+  .sidebar #navigation .nav-group-title:hover{color:var(--xy-ink-2)}
+  .sidebar #navigation .nav-group-title::after{content:'';width:6px;height:6px;margin-right:2px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg) translate(-2px,-2px);transition:transform .26s var(--xy-ease)}
+  .sidebar #navigation .nav-group.is-collapsed .nav-group-title::after{transform:rotate(-45deg) translate(-1px,-1px)}
+  .sidebar #navigation .nav-group-links{display:grid;grid-template-rows:1fr;transition:grid-template-rows .26s var(--xy-ease)}
+  .sidebar #navigation .nav-group.is-collapsed .nav-group-links{grid-template-rows:0fr}
+  .sidebar #navigation .nav-group-inner{display:grid;gap:3px;min-height:0;overflow:hidden}
+  .sidebar #navigation .nav-group.is-collapsed .nav-group-inner{visibility:hidden;transition:visibility 0s .26s}
+  .sidebar #navigation .nav-item{min-height:40px;padding:0 10px;gap:10px;border-radius:8px;background:none;color:var(--xy-ink-3);font-weight:500}
+  .sidebar #navigation .nav-item:hover{background:var(--xy-raised);color:var(--xy-ink)}
+  .sidebar #navigation .nav-item.active{background:var(--xy-raised);color:var(--xy-ink);font-weight:600}
+  .sidebar #navigation .nav-item .icon{opacity:.7;transition:color .2s var(--xy-ease),opacity .2s var(--xy-ease)}
+  .sidebar #navigation .nav-item:hover .icon,.sidebar #navigation .nav-item.active .icon{opacity:1}
+  .sidebar #navigation .nav-item.active .icon{color:var(--xy-gold)}
+  .sidebar #navigation .nav-item.active:before{left:0;top:calc(50% - 9px);width:3px;height:18px;border-radius:0 3px 3px 0;background:var(--xy-gold);box-shadow:0 0 8px var(--xy-glow)}
+  .sidebar #navigation .nav-item:focus-visible{outline-offset:-2px}
+
+  html[data-rail=mini]{--rail-width:68px}
+  html[data-rail=mini] aside.sidebar .brand{justify-content:center;padding-inline:0}
+  html[data-rail=mini] aside.sidebar .brand span,html[data-rail=mini] .sidebar #navigation .nav-item span,html[data-rail=mini] .sidebar #navigation .nav-group-title,html[data-rail=mini] .rail-toggle span{display:none}
+  html[data-rail=mini] .sidebar #navigation .nav-group.is-collapsed .nav-group-links{grid-template-rows:1fr}
+  html[data-rail=mini] .sidebar #navigation .nav-group.is-collapsed .nav-group-inner{visibility:visible}
+  html[data-rail=mini] .sidebar #navigation .nav-item{justify-content:center;padding:0}
+  html[data-rail=mini] .sidebar #navigation .nav-group+.nav-group{padding-top:8px}
+  html[data-rail=mini] .rail-toggle{justify-content:center;padding:0}
+  html[data-rail=mini] .rail-toggle i{transform:rotate(-135deg)}
+  html[data-rail=mini] aside.sidebar .local-label{font-size:0}
+}
+
+@media(max-width:760px){
+  .sidebar #navigation .nav-group-title{display:none}
+  .sidebar #navigation .nav-group-links,.sidebar #navigation .nav-group.is-collapsed .nav-group-links{display:flex}
+  .sidebar #navigation .nav-group-inner,.sidebar #navigation .nav-group.is-collapsed .nav-group-inner{display:flex;gap:3px;overflow:visible;visibility:visible}
+  .rail-toggle{display:none}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .shell,aside.sidebar,.sidebar #navigation *,.sidebar #navigation *::after,.rail-toggle,.rail-toggle i{transition:none!important}
+}

@@ -1,0 +1,6 @@
+{
+  "name": "序研",
+  "port": 8751,
+  "mysql_port": 19317,
+  "workers_enabled": false
+}

@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+/data/
+/output/
+/tools/mysql/
+.env
+.env.*
+*.enc
+*.pem
+*.log
+*.zip
+*.bak

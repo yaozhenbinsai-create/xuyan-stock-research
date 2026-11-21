@@ -1,0 +1,82 @@
+-- Owned project schema, applied by the migration account, never the web account.
+CREATE TABLE IF NOT EXISTS schema_versions(version INT PRIMARY KEY, applied_at VARCHAR(32) NOT NULL) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS facts(
+ id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+ dataset VARCHAR(24) CHARACTER SET ascii NOT NULL, day DATE NOT NULL,
+ symbol VARCHAR(12) CHARACTER SET ascii NOT NULL, record_key VARCHAR(160) NOT NULL DEFAULT '',
+ source VARCHAR(48) CHARACTER SET ascii NOT NULL, source_version VARCHAR(64) NOT NULL DEFAULT '',
+ payload_bytes INT UNSIGNED NOT NULL, fingerprint BINARY(32) NOT NULL,
+ first_seen VARCHAR(32) CHARACTER SET ascii NOT NULL, last_seen VARCHAR(32) CHARACTER SET ascii NOT NULL,
+ acquisitions INT UNSIGNED NOT NULL DEFAULT 1, original_id BIGINT, last_original_id BIGINT,
+ UNIQUE KEY fact_fingerprint(fingerprint), KEY fact_identity(dataset,day,symbol,record_key), KEY fact_retention(dataset,day,id), KEY fact_dataset_id(dataset,id)
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS heads(
+ dataset VARCHAR(24) CHARACTER SET ascii NOT NULL, day DATE NOT NULL,
+ symbol VARCHAR(12) CHARACTER SET ascii NOT NULL, record_key VARCHAR(160) NOT NULL DEFAULT '', fact_id BIGINT UNSIGNED NOT NULL,
+ PRIMARY KEY(dataset,day,symbol,record_key), KEY head_page(dataset,day DESC,symbol,record_key),
+ KEY head_symbol(dataset,symbol,day DESC,record_key), CONSTRAINT head_fact FOREIGN KEY(fact_id) REFERENCES facts(id)
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS sources(id VARCHAR(48) CHARACTER SET ascii PRIMARY KEY, data MEDIUMTEXT NOT NULL) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS fact_origins(
+ fact_id BIGINT UNSIGNED NOT NULL, source VARCHAR(48) CHARACTER SET ascii NOT NULL,
+ source_version VARCHAR(64) NOT NULL DEFAULT '', first_seen VARCHAR(32) CHARACTER SET ascii NOT NULL,
+ last_seen VARCHAR(32) CHARACTER SET ascii NOT NULL, PRIMARY KEY(fact_id,source),
+ CONSTRAINT origin_fact FOREIGN KEY(fact_id) REFERENCES facts(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS schedules(
+ id VARCHAR(48) CHARACTER SET ascii PRIMARY KEY, data MEDIUMTEXT NOT NULL,
+ last_job CHAR(16) CHARACTER SET ascii, last_slot VARCHAR(64) CHARACTER SET ascii,
+ source VARCHAR(48) CHARACTER SET ascii, kind VARCHAR(24) CHARACTER SET ascii,
+ enabled BOOLEAN NOT NULL DEFAULT 0, trading_only BOOLEAN NOT NULL DEFAULT 0,
+ run_at TIME, interval_seconds INT UNSIGNED NOT NULL DEFAULT 0
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS settings(`key` VARCHAR(100) CHARACTER SET ascii PRIMARY KEY, data MEDIUMTEXT NOT NULL) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS models(id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT, name VARCHAR(120) NOT NULL UNIQUE, data MEDIUMTEXT NOT NULL, secret BLOB) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS plans(id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT, name VARCHAR(120) NOT NULL UNIQUE, data MEDIUMTEXT NOT NULL) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS agents(id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT, name VARCHAR(120) NOT NULL UNIQUE, data MEDIUMTEXT NOT NULL) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS collection_jobs(
+ id CHAR(16) CHARACTER SET ascii PRIMARY KEY, identity CHAR(64) CHARACTER SET ascii NOT NULL,
+ status VARCHAR(20) CHARACTER SET ascii NOT NULL, created VARCHAR(32) CHARACTER SET ascii NOT NULL, data MEDIUMTEXT NOT NULL,
+ retry_at DOUBLE NOT NULL DEFAULT 0, expires_at DATETIME(6), `trigger` VARCHAR(32) CHARACTER SET ascii NOT NULL DEFAULT '',
+ last_yield DOUBLE NOT NULL DEFAULT 0, done INT UNSIGNED NOT NULL DEFAULT 0, total INT UNSIGNED NOT NULL DEFAULT 0,
+ added INT UNSIGNED NOT NULL DEFAULT 0, unchanged INT UNSIGNED NOT NULL DEFAULT 0, received INT UNSIGNED NOT NULL DEFAULT 0,
+ failed INT UNSIGNED NOT NULL DEFAULT 0, no_data INT UNSIGNED NOT NULL DEFAULT 0, reused INT UNSIGNED NOT NULL DEFAULT 0,
+ retries INT UNSIGNED NOT NULL DEFAULT 0, deferred_retries INT UNSIGNED NOT NULL DEFAULT 0,
+ source VARCHAR(48) CHARACTER SET ascii, dataset VARCHAR(24) CHARACTER SET ascii, schedule_id VARCHAR(48) CHARACTER SET ascii,
+ mode VARCHAR(12) CHARACTER SET ascii NOT NULL DEFAULT 'missing', name VARCHAR(200) NOT NULL DEFAULT '', message TEXT,
+ updated VARCHAR(32) CHARACTER SET ascii, range_start DATE, range_end DATE,
+ active_identity CHAR(64) CHARACTER SET ascii GENERATED ALWAYS AS (CASE WHEN status IN ('queued','running','waiting','paused') THEN identity ELSE NULL END) STORED,
+ UNIQUE KEY active_job_identity(active_identity), KEY job_status(status,created), KEY job_page(created DESC,id DESC),
+ KEY job_due(status,retry_at), KEY job_expiry(status,expires_at)
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS collection_events(
+ id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT, job_id CHAR(16) CHARACTER SET ascii NOT NULL,
+ created VARCHAR(32) CHARACTER SET ascii NOT NULL, data TEXT NOT NULL, KEY event_job(job_id,id DESC), KEY event_expiry(created,id)
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS collection_units(
+ source VARCHAR(48) CHARACTER SET ascii NOT NULL, scope VARCHAR(512) NOT NULL,
+ checked VARCHAR(32) CHARACTER SET ascii NOT NULL, received INT UNSIGNED NOT NULL, PRIMARY KEY(source,scope)
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS audit(
+ id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT, created VARCHAR(32) CHARACTER SET ascii NOT NULL,
+ action VARCHAR(100) NOT NULL, data TEXT NOT NULL, KEY audit_expiry(created,id)
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS asset_stats(
+ dataset VARCHAR(24) CHARACTER SET ascii PRIMARY KEY,
+ record_count BIGINT UNSIGNED NOT NULL DEFAULT 0, first_day DATE, last_day DATE,
+ symbol_count BIGINT UNSIGNED NOT NULL DEFAULT 0, version_count BIGINT UNSIGNED NOT NULL DEFAULT 0,
+ generation BIGINT UNSIGNED NOT NULL DEFAULT 0
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS dataset_usage(dataset VARCHAR(24) CHARACTER SET ascii PRIMARY KEY, payload_bytes BIGINT NOT NULL, records BIGINT NOT NULL) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS collection_holds(
+ dataset VARCHAR(24) CHARACTER SET ascii NOT NULL, day CHAR(10) CHARACTER SET ascii NOT NULL,
+ symbol VARCHAR(12) CHARACTER SET ascii NOT NULL, PRIMARY KEY(dataset,day,symbol)
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS classification_scopes(id BIGINT PRIMARY KEY, data TEXT NOT NULL) ENGINE=InnoDB;
+-- Pin only facts actually cited by a durable decision, never a whole batch by default.
+CREATE TABLE IF NOT EXISTS evidence_refs(
+ owner_type VARCHAR(24) CHARACTER SET ascii NOT NULL, owner_id VARCHAR(64) CHARACTER SET ascii NOT NULL,
+ fact_id BIGINT UNSIGNED NOT NULL, created VARCHAR(32) CHARACTER SET ascii NOT NULL,
+ PRIMARY KEY(owner_type,owner_id,fact_id), KEY evidence_fact(fact_id),
+ CONSTRAINT evidence_fact FOREIGN KEY(fact_id) REFERENCES facts(id)
+) ENGINE=InnoDB;

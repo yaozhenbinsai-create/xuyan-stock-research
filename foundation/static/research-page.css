@@ -1,0 +1,95 @@
+/* research-page.css: AI research page (#research). Scoped to main[data-page='research']; markup, data-action hooks and the --share meter stay untouched. */
+body:has(main[data-page='research']){background:#0c0f17}
+body:has(main[data-page='research']) .topbar{background:rgba(12,15,23,.9);border-bottom-color:var(--xy-line)}
+body:has(main[data-page='research']) .breadcrumb,body:has(main[data-page='research']) .market-label,body:has(main[data-page='research']) .space-symbol{color:var(--xy-ink-3)}
+body:has(main[data-page='research']) .breadcrumb strong{color:var(--xy-ink)}
+body:has(main[data-page='research']) .search-trigger{background:var(--xy-surface);border-color:#2e3850;color:var(--xy-ink-3)}
+body:has(main[data-page='research']) .search-trigger:hover{border-color:var(--xy-gold);color:var(--xy-gold);box-shadow:none}
+body:has(main[data-page='research']) kbd{background:var(--xy-raised);border-color:#2e3850;color:var(--xy-ink-3)}
+body:has(main[data-page='research']) .avatar{background:var(--xy-raised);border-color:var(--xy-line);color:var(--xy-ink-2)}
+body:has(main[data-page='research']) .page-footer{border-top-color:var(--xy-line);color:var(--xy-ink-4)}
+main[data-page='research'] .desk-index{display:none}
+main[data-page='research'] .notice:not(.amber){margin:0 0 24px;background:var(--xy-surface);border:1px solid var(--xy-line);color:var(--xy-ink-3)}
+main[data-page='research'] .notice:not(.amber) strong{color:var(--xy-ink)}
+main[data-page='research'] .notice.amber{margin:0 0 16px}
+main[data-page='research'] .btn{background:var(--xy-surface);border-color:#2e3850;color:var(--xy-ink-2)}
+main[data-page='research'] .btn:hover{background:var(--xy-raised);border-color:var(--xy-gold);color:var(--xy-gold)}
+main[data-page='research'] .btn.primary{background:var(--xy-gold);border-color:var(--xy-gold);color:#0c0f17}
+main[data-page='research'] .btn.primary:hover{background:#e0a23a;color:#0c0f17}
+main[data-page='research'] .btn.ghost{background:transparent;border-color:transparent;color:var(--xy-ink-3)}
+main[data-page='research'] .btn.ghost:hover{background:var(--xy-raised);color:var(--xy-gold)}
+main[data-page='research'] .panel{background:var(--xy-surface);border-color:var(--xy-line);color:var(--xy-ink-2)}
+main[data-page='research'] .desk-mast{gap:24px;padding-bottom:20px;border-bottom:1px solid var(--xy-line)}
+main[data-page='research'] .desk-mast h1{margin:0 0 6px;font-family:'Source Han Serif SC','Songti SC',Georgia,serif;font-size:32px;font-weight:700;letter-spacing:-.02em;line-height:1.2;color:var(--xy-ink)}
+main[data-page='research'] .desk-mast p{color:var(--xy-ink-3)}
+main[data-page='research'] .section-heading h2{font-family:'Source Han Serif SC','Songti SC',Georgia,serif;font-size:20px;color:var(--xy-ink)}
+main[data-page='research'] .section-heading p,main[data-page='research'] .form-note{color:var(--xy-ink-3)}
+main[data-page='research'] .research-session{gap:12px;margin:16px 0}
+main[data-page='research'] .session-tab{padding:16px 18px;border:1px solid var(--xy-line);border-radius:12px;background:var(--xy-surface);color:var(--xy-ink-3);transition:border-color .2s var(--xy-ease),background .2s var(--xy-ease)}
+main[data-page='research'] .session-tab:hover{border-color:#2e3850;background:var(--xy-raised)}
+main[data-page='research'] .session-tab strong{font-family:'Source Han Serif SC','Songti SC',Georgia,serif;font-size:19px;color:var(--xy-ink)}
+main[data-page='research'] .session-tab small{color:var(--xy-gold)}
+main[data-page='research'] .session-tab.selected{background:var(--xy-raised);border-color:rgba(245,181,68,.45);box-shadow:inset 0 2px 0 var(--xy-gold)}
+main[data-page='research'] .session-tab.selected strong{color:var(--xy-ink)}
+main[data-page='research'] .research-context{background:var(--xy-surface);border-color:var(--xy-line)}
+main[data-page='research'] .research-context.historical{background:#241d10;border-color:#5a4520}
+main[data-page='research'] .research-date-line,main[data-page='research'] .research-time{color:var(--xy-ink-3)}
+main[data-page='research'] .research-date-line strong,main[data-page='research'] .research-time b{color:var(--xy-ink-2)}
+main[data-page='research'] .research-flow .flow-step{background:var(--xy-surface);border-color:var(--xy-line);color:var(--xy-ink-2)}
+main[data-page='research'] .research-flow .flow-step>span{color:var(--xy-ink-4)}
+main[data-page='research'] .research-flow .flow-step small{color:var(--xy-ink-3)}
+main[data-page='research'] .research-flow :is(a,button).flow-step:hover{background:var(--xy-raised);border-color:#2e3850}
+main[data-page='research'] .research-flow .flow-step.current{background:var(--xy-raised);border-color:rgba(245,181,68,.45);box-shadow:inset 0 2px 0 var(--xy-gold)}
+main[data-page='research'] .research-flow .flow-step.current>span{background:var(--xy-gold);color:#0c0f17}
+main[data-page='research'] .slot-strip{background:var(--xy-surface);border-color:var(--xy-line)}
+main[data-page='research'] .slot-strip>div>span:not(.chip),main[data-page='research'] .slot-strip small{color:var(--xy-ink-3)}
+main[data-page='research'] .slot-strip b{color:var(--xy-ink)}
+main[data-page='research'] .research-progress{border-color:rgba(245,181,68,.35)}
+main[data-page='research'] .research-progress p{color:var(--xy-ink-3)}
+main[data-page='research'] .research-orbit{border-color:#2e3850;border-top-color:var(--xy-gold)}
+main[data-page='research'] .desk-decision{border:1px solid var(--xy-line);border-radius:14px;background:var(--xy-surface)}
+main[data-page='research'] .desk-decision-main h2{font-family:'Source Han Serif SC','Songti SC',Georgia,serif;color:var(--xy-ink);letter-spacing:-.02em}
+main[data-page='research'] .desk-verdicts>div{border-top:2px solid #525c70;background:var(--xy-raised)}
+main[data-page='research'] .desk-verdicts>div.buy{border-color:#f06060;background:#241a1a}
+main[data-page='research'] .desk-verdicts>div.watch{border-color:#3fc8c8;background:#13242a}
+main[data-page='research'] .desk-verdicts b{font-family:'Bahnschrift','DIN Alternate','Roboto Condensed',monospace;color:var(--xy-ink)}
+main[data-page='research'] .desk-verdicts .buy b{color:#f06060}
+main[data-page='research'] .desk-verdicts .watch b{color:#3fc8c8}
+main[data-page='research'] .desk-verdicts span,main[data-page='research'] .desk-awaiting{color:var(--xy-ink-3)}
+main[data-page='research'] .desk-decision .hero-stock-names button{border-color:#2e3850;background:var(--xy-raised);color:var(--xy-ink-2)}
+main[data-page='research'] .desk-decision .hero-stock-names button:hover{border-color:var(--xy-gold);background:var(--xy-raised);color:var(--xy-gold)}
+main[data-page='research'] .desk-decision .hero-stock-names small{color:var(--xy-ink-3)}
+main[data-page='research'] .desk-funnel{background:#0e1220;border-left:1px solid var(--xy-line)}
+main[data-page='research'] .desk-funnel-head h3{font-family:'Source Han Serif SC','Songti SC',Georgia,serif;color:var(--xy-ink)}
+main[data-page='research'] .desk-funnel li>div:first-child,main[data-page='research'] .desk-funnel-foot{color:var(--xy-ink-3)}
+main[data-page='research'] .desk-funnel li b{font-family:'Bahnschrift','DIN Alternate','Roboto Condensed',monospace;color:var(--xy-ink)}
+main[data-page='research'] .desk-meter{background:#1b2231}
+main[data-page='research'] .desk-meter i{background:#6f9bff}
+main[data-page='research'] .desk-funnel li:nth-child(3) .desk-meter i,main[data-page='research'] .desk-funnel li:nth-child(4) .desk-meter i{background:var(--xy-gold)}
+main[data-page='research'] .desk-link{color:var(--xy-gold)}
+main[data-page='research'] .research-coverage{background:var(--xy-surface);border:1px solid var(--xy-line)}
+main[data-page='research'] .research-coverage span,main[data-page='research'] .research-coverage p{color:var(--xy-ink-3)}
+main[data-page='research'] .research-coverage strong{color:var(--xy-ink)}
+main[data-page='research'] .audit-stages{border-color:var(--xy-line)}
+main[data-page='research'] .audit-stages>div{border-inline-end-color:var(--xy-line)}
+main[data-page='research'] .audit-stages span,main[data-page='research'] .audit-summary p,main[data-page='research'] .audit-blocks{color:var(--xy-ink-3)}
+main[data-page='research'] .audit-stages strong,main[data-page='research'] .audit-summary h2{color:var(--xy-ink)}
+main[data-page='research'] .audit-verdict{background:var(--xy-raised)}
+main[data-page='research'] .stock-research-card h3{font-family:'Source Han Serif SC','Songti SC',Georgia,serif;color:var(--xy-ink)}
+main[data-page='research'] .stock-research-card .stock-thesis{color:var(--xy-ink-2)}
+main[data-page='research'] .stock-card-top small,main[data-page='research'] .stock-facts span,main[data-page='research'] .stock-card-foot>span{color:var(--xy-ink-3)}
+main[data-page='research'] .stock-facts{border-color:var(--xy-line)}
+main[data-page='research'] .stock-facts b{color:var(--xy-ink)}
+main[data-page='research'] .stock-paths span{background:var(--xy-raised);color:var(--xy-ink-3)}
+main[data-page='research'] .rise-board.tile{background:var(--xy-surface);border:1px solid var(--xy-line)}
+main[data-page='research'] .archive-day{border-color:var(--xy-line);background:var(--xy-surface)}
+main[data-page='research'] .archive-day>header{background:var(--xy-raised);color:var(--xy-ink-3)}
+main[data-page='research'] .archive-day>header h3{font-family:'Bahnschrift','DIN Alternate','Roboto Condensed',monospace;color:var(--xy-gold)}
+main[data-page='research'] .archive-entry{border-bottom-color:var(--xy-line)}
+main[data-page='research'] .archive-entry h3{color:var(--xy-ink)}
+main[data-page='research'] .archive-entry small,main[data-page='research'] .archive-when span{color:var(--xy-ink-3)}
+main[data-page='research'] .archive-when time{color:var(--xy-ink-2)}
+main[data-page='research'] .empty{color:var(--xy-ink-3)}
+main[data-page='research'] .empty h3{color:var(--xy-ink-2)}
+@media(max-width:1120px){main[data-page='research'] .desk-funnel{border-left:0;border-top:1px solid var(--xy-line)}}
+@media(prefers-reduced-motion:reduce){main[data-page='research'] .session-tab{transition:none}}

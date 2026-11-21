@@ -1,0 +1,980 @@
+/* ─── DESIGN UPGRADE v2 ──────────────────────────────────────────────────────
+   Authored visual system for 序研. References (not copied):
+   - Mercury: editorial hero, one accent, tabular numerals, asymmetric layout
+   - Bloomberg Terminal: tabular numerals everywhere, semantic-only color, density
+   - Linear: low-contrast nav, 240ms ease, command-K as center of gravity
+   - Vercel/Geist: precise hovers, subtle shimmer on loading
+   - Rauno: 200ms feedback budget, focus rings, keyboard-first
+   - MAGIC UI patterns: border-beam, shimmer-button, number-ticker, magic-card
+
+   Load AFTER all existing stylesheets. Light mode only.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  color-scheme: light;
+
+  /* ── Paper / ink ramp (warm off-white, not #fff) ── */
+  --paper:        #fdfcf9;   /* primary surface: warm cream, Mercury-style */
+  --paper-2:      #f6f4ee;   /* secondary surface, cards on cards */
+  --paper-3:      #efede4;   /* sunken / input bg */
+  --line:         #e4e1d4;   /* hairline border, warm */
+  --line-strong:  #d4d0c0;
+  --ink:          #1a1814;   /* body text: warm near-black, not pure #000 */
+  --ink-2:        #4a463e;   /* secondary text */
+  --ink-3:        #7a7466;   /* muted */
+  --ink-4:        #a8a290;   /* micro labels */
+
+  /* ── Single accent: cobalt blue (Mercury-style restraint) ── */
+  --ac:           #2e44d4;
+  --ac-soft:      #e9ecfb;
+  --ac-deep:      #1e30a8;
+  --ac-glow:      #2e44d433;
+
+  /* ── Research accent: violet (for AI-generated content only) ── */
+  --rs:           #6e3ad6;
+  --rs-soft:      #f0e9fc;
+  --rs-deep:      #4f25b3;
+
+  /* ── Semantic colors, Bloomberg-style discipline ── */
+  --up:           #0a6e3d;
+  --up-bg:        #e7f4ec;
+  --down:         #b8291f;
+  --down-bg:      #fceae7;
+  --warn:         #94601b;
+  --warn-bg:      #fbf1de;
+
+  /* ── Motion ── */
+  --ease-out:     cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring:  cubic-bezier(0.34, 1.4, 0.64, 1);
+  --ease-precise: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast:     120ms;
+  --dur-base:     200ms;
+  --dur-slow:     350ms;
+
+  /* ── Radii (two values, inner < outer) ── */
+  --r-outer:      14px;
+  --r-inner:      8px;
+
+  /* ── Shadows (soft, never heavy blur) ── */
+  --shadow-1:     0 1px 2px #1a181408, 0 1px 3px #1a181405;
+  --shadow-2:     0 2px 8px #1a18140a, 0 4px 16px #1a181406;
+  --shadow-glow:  0 0 0 1px var(--ac-glow), 0 8px 24px var(--ac-glow);
+
+  /* ── Type: editorial system ── */
+  --font-serif:   "Source Han Serif SC", "Songti SC", Georgia, serif;
+  --font-mono:    "JetBrains Mono", "SF Mono", "Consolas", monospace;
+  --font-sans:    "Inter", "PingFang SC", "Segoe UI", sans-serif;
+}
+
+/* ─── 1. BODY & GLOBAL TYPE ──────────────────────────────────────────────── */
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.6;
+  letter-spacing: -0.005em;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Force tabular numerals on all numbers (Bloomberg discipline) */
+.numeric, .num, .price, .amount, [data-count],
+td.numeric, .metric-value, .asset-total, .storage-value,
+.library-core strong, .summary-tile strong, .receipt-stat {
+  font-variant-numeric: tabular-nums !important;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  letter-spacing: -0.02em;
+}
+
+/* Mono for IDs, codes, timestamps — Vercel/Geist style */
+.mono, code, .receipt-id, .model-identifier, [data-mono] {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0;
+}
+
+/* ─── 2. SIDEBAR — editorial near-black, Linear-style restrained nav ──────── */
+
+.sidebar {
+  background: #131210;        /* warmer than pure black */
+  border-right: 1px solid #2a2820;
+  padding: 28px 14px 24px;
+}
+
+.brand {
+  padding-inline: 8px;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #f0ede4;
+}
+
+.brand img { filter: brightness(1.08); }
+
+.nav-group-title {
+  font-size: 9px;
+  letter-spacing: 2.5px;
+  color: #5a5750;
+  text-transform: uppercase;
+  padding: 0 9px 6px;
+}
+
+.nav-item {
+  font-size: 12.5px;
+  font-weight: 450;
+  color: #8c8880;
+  border-radius: var(--r-inner);
+  min-height: 38px;
+  padding: 0 9px;
+  gap: 9px;
+  transition: color var(--dur-fast) var(--ease-out),
+              background var(--dur-fast) var(--ease-out);
+}
+
+.nav-item:hover {
+  color: #e8e4d8;
+  background: #252320;
+}
+
+.nav-item.active {
+  color: #f0ede4;
+  background: #252320;
+  font-weight: 500;
+}
+
+.nav-item.active::before {
+  background: var(--ac);
+  width: 2.5px;
+  height: 16px;
+  border-radius: 2px;
+  left: -14px;
+  top: calc(50% - 8px);
+  box-shadow: 0 0 8px var(--ac-glow);
+}
+
+.nav-item .icon {
+  width: 15px;
+  height: 15px;
+  opacity: 0.7;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.nav-item.active .icon, .nav-item:hover .icon { opacity: 1; }
+
+.local-label {
+  font-size: 9px;
+  color: #3d3b36;
+  border-top: 1px solid #252320;
+  padding-top: 18px;
+  gap: 6px;
+}
+
+.small-dot { background: #3d6b4a; width: 4px; height: 4px; }
+
+/* ─── 3. TOPBAR ───────────────────────────────────────────────────────────── */
+
+.topbar {
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+  height: 64px;
+  padding: 0 36px;
+  backdrop-filter: blur(8px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.space-symbol {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  color: var(--ink);
+  font-style: italic;
+  opacity: 0.5;
+}
+
+.breadcrumb strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+
+.search-trigger {
+  font-size: 12px;
+  color: var(--ink-3);
+  padding: 7px 11px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-inner);
+  gap: 7px;
+  background: var(--paper-2);
+  transition: border-color var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.search-trigger:hover {
+  border-color: var(--ac);
+  box-shadow: 0 0 0 3px var(--ac-glow);
+  color: var(--ac);
+}
+
+kbd {
+  font: 10px var(--font-mono);
+  background: var(--paper-3);
+  border: 1px solid var(--line-strong);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: var(--ink-4);
+}
+
+/* ─── 4. PAGE & CONTENT BASE ──────────────────────────────────────────────── */
+
+main {
+  max-width: 1480px;
+  padding: 36px 40px 48px;
+  margin: auto;
+}
+
+h1 {
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 680;
+  letter-spacing: -1.5px;
+  line-height: 1.18;
+  color: var(--ink);
+}
+
+h2 { font-size: 17px; font-weight: 620; letter-spacing: -0.3px; }
+h3 { font-size: 14px; font-weight: 600; }
+
+.eyebrow {
+  font-size: 9px;
+  letter-spacing: 2.5px;
+  font-weight: 600;
+  color: var(--ink-4);
+  text-transform: uppercase;
+}
+
+/* ─── 5. PANELS & CARDS ───────────────────────────────────────────────────── */
+
+.panel {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-outer);
+  overflow: hidden;
+  box-shadow: var(--shadow-1);
+  transition: box-shadow var(--dur-base) var(--ease-out);
+}
+
+/* MAGIC CARD — glow follows cursor via CSS custom props, set by JS */
+.magic-card {
+  position: relative;
+  isolation: isolate;
+  transition: box-shadow var(--dur-base) var(--ease-out),
+              transform   var(--dur-base) var(--ease-out);
+}
+
+.magic-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    320px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    #2e44d412 0%, transparent 70%
+  );
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+
+.magic-card:hover::before { opacity: 1; }
+.magic-card:hover { transform: translateY(-1px); box-shadow: var(--shadow-2); }
+
+/* BORDER BEAM — animated gradient border (Magic UI) */
+.border-beam {
+  position: relative;
+  overflow: hidden;
+}
+
+.border-beam::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;                   /* the border thickness */
+  background: conic-gradient(
+    from var(--beam-angle, 0deg),
+    transparent 0%,
+    var(--ac) 20%,
+    var(--rs) 40%,
+    transparent 50%,
+    transparent 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  animation: beam-rotate 3s linear infinite;
+}
+
+@keyframes beam-rotate {
+  to { --beam-angle: 360deg; }
+}
+
+@property --beam-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* ─── 6. BUTTONS ──────────────────────────────────────────────────────────── */
+
+.btn {
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: var(--r-inner);
+  min-height: 38px;
+  padding: 8px 16px;
+  border: 1px solid var(--line-strong);
+  background: var(--paper);
+  color: var(--ink);
+  gap: 7px;
+  box-shadow: var(--shadow-1);
+  transition:
+    background   var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow   var(--dur-fast) var(--ease-out),
+    transform    var(--dur-fast) var(--ease-out);
+}
+
+.btn:hover {
+  background: var(--paper-2);
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow-2);
+}
+
+.btn:active { transform: translateY(1px); box-shadow: var(--shadow-1); }
+
+/* SHIMMER BUTTON (Magic UI) — primary CTA */
+.btn.primary {
+  background: var(--ink);
+  border-color: transparent;
+  color: #f0ede4;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn.primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,0.08) 50%,
+    transparent
+  );
+  transform: skewX(-20deg);
+  transition: left 0.5s var(--ease-out);
+}
+
+.btn.primary:hover::before { left: 150%; }
+.btn.primary:hover { background: #2a2823; box-shadow: var(--shadow-glow); }
+
+.btn.small { font-size: 11.5px; min-height: 30px; padding: 5px 11px; }
+.btn.ghost { background: transparent; border-color: transparent; box-shadow: none; color: var(--ink-2); }
+.btn.ghost:hover { background: var(--paper-2); }
+
+.icon-btn {
+  border: none;
+  background: transparent;
+  color: var(--ink-3);
+  padding: 7px;
+  border-radius: var(--r-inner);
+  transition: background var(--dur-fast) var(--ease-out),
+              color    var(--dur-fast) var(--ease-out);
+}
+
+.icon-btn:hover { background: var(--paper-2); color: var(--ac); }
+
+/* Focus rings — Rauno style: visible, not garish */
+:focus-visible {
+  outline: 2px solid var(--ac);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ─── 7. CHIPS & BADGES ───────────────────────────────────────────────────── */
+
+.chip {
+  font-size: 10.5px;
+  font-weight: 580;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: var(--ac-soft);
+  color: var(--ac-deep);
+  letter-spacing: 0.01em;
+  gap: 5px;
+}
+
+.chip::before { width: 3.5px; height: 3.5px; border-radius: 50%; background: currentColor; }
+.chip.gray   { background: var(--paper-3); color: var(--ink-3); }
+.chip.amber  { background: var(--warn-bg); color: var(--warn); }
+.chip.red    { background: var(--down-bg); color: var(--down); }
+.chip.green  { background: var(--up-bg); color: var(--up); }
+.chip.violet { background: var(--rs-soft); color: var(--rs-deep); }
+
+/* Rise-type badges — large, editorial, color-coded */
+.rise-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.rise-badge.strong   { background: #fff3e6; color: #c05010; border: 1px solid #f4c89040; }
+.rise-badge.setup    { background: var(--ac-soft); color: var(--ac-deep); border: 1px solid #c0ceff40; }
+.rise-badge.early    { background: var(--up-bg); color: var(--up); border: 1px solid #a0d8b840; }
+.rise-badge.breakout { background: #f4e8ff; color: var(--rs-deep); border: 1px solid #d4b4ff40; }
+
+/* Risk flag badge */
+.risk-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9.5px;
+  font-weight: 580;
+  color: var(--warn);
+  background: var(--warn-bg);
+  border: 1px solid #e8b86040;
+  border-radius: 20px;
+  padding: 2px 7px;
+}
+
+/* ─── 8. METRICS — big-number editorial style ─────────────────────────────── */
+
+.metrics {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-outer);
+  padding: 28px 0;
+  box-shadow: var(--shadow-1);
+}
+
+.metric-value {
+  font-size: clamp(28px, 3.5vw, 44px);
+  font-weight: 580;
+  letter-spacing: -1.5px;
+  line-height: 1.15;
+  margin: 10px 0 6px;
+  color: var(--ink);
+}
+
+.metric-value small {
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--ink-3);
+  margin-left: 6px;
+}
+
+.metric-label {
+  font-size: 11px;
+  color: var(--ink-4);
+  letter-spacing: 0.02em;
+  gap: 6px;
+}
+
+.metric-note {
+  font-size: 11px;
+  color: var(--ink-4);
+  line-height: 1.5;
+}
+
+/* ─── 9. OVERVIEW HERO (data feature card) ────────────────────────────────── */
+
+.asset-feature {
+  background: var(--ink);
+  border: 0;
+  border-radius: var(--r-outer);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Dot-pattern background (Magic UI) */
+.asset-feature::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, #ffffff0d 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Gradient orb */
+.asset-feature::after {
+  content: '';
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  background: radial-gradient(circle, var(--ac-glow) 0%, transparent 70%);
+  right: -60px;
+  bottom: -80px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.asset-feature > * { position: relative; z-index: 1; }
+
+.asset-total {
+  font-size: clamp(40px, 5vw, 68px);
+  font-weight: 540;
+  letter-spacing: -2.5px;
+  line-height: 1.15;
+  color: #f0ede4;
+  margin: 18px 0 14px;
+}
+
+.asset-total small {
+  font-size: 15px;
+  color: #8c8880;
+  letter-spacing: 0;
+  margin-left: 8px;
+}
+
+.asset-feature-label {
+  font-size: 11px;
+  color: #8c8880;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  gap: 7px;
+}
+
+.asset-feature-label .icon { color: var(--ac); width: 14px; height: 14px; }
+
+.asset-feature-foot {
+  border-top: 1px solid #ffffff14;
+  padding-top: 14px;
+  font-size: 11px;
+  color: #6a6660;
+}
+
+.asset-feature-foot a {
+  color: var(--ac-300, #8fa0ff);
+  gap: 5px;
+  transition: color var(--dur-fast);
+}
+
+.asset-feature-foot a:hover { color: #fff; }
+
+/* ─── 10. SUMMARY TILES ───────────────────────────────────────────────────── */
+
+.summary-tile {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-outer);
+  padding: 22px 24px;
+  box-shadow: var(--shadow-1);
+  transition: box-shadow var(--dur-base), transform var(--dur-base);
+}
+
+.summary-tile:hover { box-shadow: var(--shadow-2); transform: translateY(-1px); }
+
+.summary-tile strong {
+  font-size: clamp(26px, 3vw, 34px);
+  letter-spacing: -1.2px;
+  font-weight: 580;
+  line-height: 1.2;
+  margin: 10px 0 6px;
+}
+
+.summary-tile > span { font-size: 11px; color: var(--ink-3); letter-spacing: 0.02em; }
+.summary-tile p { font-size: 11px; color: var(--ink-4); margin: 0; }
+
+.summary-tile.ai-tile {
+  background: linear-gradient(135deg, var(--ac-soft) 0%, #edeeff 100%);
+  border-color: #c8d0ff;
+}
+
+.ai-tile strong { color: var(--ac-deep); }
+
+/* ─── 11. COVERAGE CHART ──────────────────────────────────────────────────── */
+
+.coverage-chart rect {
+  fill: var(--ac-soft);
+  transition: fill var(--dur-fast);
+}
+
+.coverage-chart rect:last-child { fill: var(--ac); }
+.coverage-chart rect:hover { fill: var(--ac-deep); }
+.coverage-chart line { stroke: var(--line); }
+
+/* ─── 12. TABLE ───────────────────────────────────────────────────────────── */
+
+th {
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--ink-4);
+  background: var(--paper-2);
+  border-bottom: 1px solid var(--line);
+  padding: 11px 20px;
+}
+
+td {
+  font-size: 13px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+}
+
+tbody tr {
+  transition: background var(--dur-fast) var(--ease-out);
+}
+
+tbody tr:hover { background: var(--paper-2); }
+
+.record-row td:first-child {
+  border-left: 2.5px solid transparent;
+  transition: border-color var(--dur-fast);
+}
+
+.record-row:hover td:first-child { border-left-color: var(--ac); }
+
+/* ─── 13. RESEARCH FLOW STATUS ────────────────────────────────────────────── */
+
+/* Pulsing "running" indicator */
+@keyframes pulse-ring {
+  0%   { transform: scale(0.9); opacity: 0.8; }
+  70%  { transform: scale(1.3); opacity: 0;   }
+  100% { transform: scale(1.3); opacity: 0;   }
+}
+
+.research-running-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ac);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.research-running-dot::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: var(--ac-glow);
+  animation: pulse-ring 1.6s var(--ease-out) infinite;
+}
+
+/* ─── 14. SPINNER — refined ───────────────────────────────────────────────── */
+
+@keyframes spin-arc {
+  0%   { transform: rotate(0deg);   }
+  100% { transform: rotate(360deg); }
+}
+
+.spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--line-strong);
+  border-top-color: var(--ac);
+  border-radius: 50%;
+  animation: spin-arc 0.7s linear infinite;
+  vertical-align: middle;
+}
+
+/* SKELETON / shimmer (Vercel-style) */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--paper-2) 25%,
+    var(--paper-3) 37%,
+    var(--paper-2) 63%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.4s ease infinite;
+  border-radius: var(--r-inner);
+}
+
+.loading { display: flex; align-items: center; gap: 10px; color: var(--ink-3); padding: 60px 0; justify-content: center; }
+
+/* ─── 15. NOTICE / ALERT STRIP ────────────────────────────────────────────── */
+
+.notice {
+  border-radius: var(--r-inner);
+  padding: 14px 16px;
+  font-size: 12.5px;
+  gap: 9px;
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  color: var(--ink-2);
+}
+
+.notice.amber { background: var(--warn-bg); border-color: #e8c04840; color: var(--warn); }
+.notice.red   { background: var(--down-bg); border-color: #f0908040; color: var(--down); }
+.notice.blue  { background: var(--ac-soft); border-color: #c0d0ff40; color: var(--ac-deep); }
+.notice.violet { background: var(--rs-soft); border-color: #c0a0ff40; color: var(--rs-deep); }
+
+/* ─── 16. MODAL / DIALOG ──────────────────────────────────────────────────── */
+
+dialog {
+  border: none;
+  border-radius: 20px;
+  box-shadow: 0 24px 80px #00000028, 0 0 0 1px var(--line);
+  padding: 0;
+  max-width: min(680px, 95vw);
+  width: 100%;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+dialog::backdrop {
+  background: #00000030;
+  backdrop-filter: blur(4px);
+}
+
+@keyframes dialog-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+dialog[open] { animation: dialog-in 0.22s var(--ease-spring); }
+
+.dialog-header {
+  padding: 24px 28px 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dialog-header h2 {
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: -0.3px;
+}
+
+.dialog-body { padding: 20px 28px; }
+.dialog-footer { padding: 16px 28px 24px; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--line); }
+
+/* ─── 17. SCHEDULE PREVIEW ────────────────────────────────────────────────── */
+
+.schedule-preview li {
+  border-bottom: 1px solid var(--line);
+  padding: 12px 0;
+  gap: 14px;
+  display: flex;
+  align-items: center;
+}
+
+.time-block {
+  width: 42px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ac);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.schedule-line strong { font-size: 12.5px; font-weight: 530; }
+.schedule-line small  { font-size: 10.5px; color: var(--ink-4); }
+
+/* ─── 18. TABS ────────────────────────────────────────────────────────────── */
+
+.tabs {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0;
+  margin: 28px 0 24px;
+  gap: 2px;
+}
+
+.tab {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-3);
+  padding: 9px 14px;
+  border-radius: var(--r-inner) var(--r-inner) 0 0;
+  border: none;
+  background: transparent;
+  position: relative;
+  transition: color var(--dur-fast), background var(--dur-fast);
+}
+
+.tab::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--ac);
+  border-radius: 2px 2px 0 0;
+  transform: scaleX(0);
+  transition: transform var(--dur-base) var(--ease-spring);
+}
+
+.tab:hover { color: var(--ink); background: var(--paper-2); }
+.tab.active { color: var(--ink); font-weight: 600; }
+.tab.active::after { transform: scaleX(1); }
+
+.tab small {
+  font-size: 9.5px;
+  background: var(--paper-3);
+  color: var(--ink-4);
+  padding: 1px 5px;
+  border-radius: 10px;
+  margin-left: 5px;
+}
+
+.tab.active small { background: var(--ac-soft); color: var(--ac-deep); }
+
+/* ─── 19. INPUT & FORM ────────────────────────────────────────────────────── */
+
+input, select, textarea {
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-inner);
+  padding: 10px 13px;
+  font-size: 13.5px;
+  color: var(--ink);
+  box-shadow: inset 0 1px 2px #00000006;
+  transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--ac);
+  box-shadow: 0 0 0 3px var(--ac-glow), inset 0 1px 2px #00000006;
+}
+
+label.field {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+
+/* ─── 20. TOAST ───────────────────────────────────────────────────────────── */
+
+@keyframes toast-in {
+  from { transform: translateX(-50%) translateY(12px); opacity: 0; }
+  to   { transform: translateX(-50%) translateY(0);    opacity: 1; }
+}
+
+#toast {
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 24px;
+  padding: 10px 20px;
+  background: var(--ink);
+  color: #f0ede4;
+  border: 1px solid #3a3830;
+  box-shadow: 0 8px 32px #00000030;
+  letter-spacing: -0.01em;
+}
+
+#toast.visible {
+  animation: toast-in 0.22s var(--ease-spring);
+}
+
+#toast.error {
+  background: var(--down);
+  color: #fff;
+  border-color: #d04030;
+}
+
+/* ─── 21. PAGE FOOTER ─────────────────────────────────────────────────────── */
+
+.page-footer {
+  font-size: 10px;
+  color: var(--ink-4);
+  letter-spacing: 0.02em;
+}
+
+/* ─── 22. RESPONSIVE ──────────────────────────────────────────────────────── */
+
+@media (max-width: 860px) {
+  main { padding: 24px 20px 40px; }
+  .asset-total { font-size: 42px; }
+  .metric-value { font-size: 26px; }
+}
+
+@media (max-width: 560px) {
+  .topbar { height: 56px; padding: 0 16px; }
+  .search-trigger span:not(.icon) { display: none; }
+  main { padding: 20px 16px 36px; }
+}
+
+/* ─── 23. MAGIC CARD MOUSE-TRACKING JS HOOK ───────────────────────────────── */
+/* Applied by a small inline script: magic-card-init.js */
+
+/* ─── 24. BORDER BEAM RING (element injected by initBeams) ───────────────── */
+.studio-hero, .library-hero { position: relative; }
+
+.asset-feature > .beam-ring,
+.studio-hero > .beam-ring,
+.library-hero > .beam-ring {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  background: conic-gradient(from var(--beam-angle, 0deg), transparent 0%, var(--ac) 12%, var(--rs) 24%, transparent 36%, transparent 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: beam-rotate 4s linear infinite;
+}
+
+/* ─── 24b. MAGIC CARD GLOW LAYER: keep the glow under card content ───────── */
+.magic-card:not(.asset-feature)::before { z-index: -1; }
+
+/* ─── 24c. RISE BOARD: dark surface glow, bento tiles, border beam ───────── */
+.rise-board { position: relative; }
+.rise-board > .beam-ring { position: absolute; inset: 0; z-index: 2; border-radius: inherit; padding: 1px; pointer-events: none; background: conic-gradient(from var(--beam-angle, 0deg), transparent 0%, #a888f6 12%, var(--ac) 24%, transparent 36%, transparent 100%); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: beam-rotate 4s linear infinite; }
+.rise-tile.magic-card::before, .rise-row.magic-card::before { background: radial-gradient(240px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), #a888f638 0%, transparent 70%); }
+.rise-board .rise-tile-grid { grid-template-columns: 1.4fr 1fr 1fr; gap: 10px; }
+.rise-board .rise-tile:nth-child(1) { grid-row: 1 / 3; min-height: 190px; align-content: end; }
+.rise-board .rise-tile:nth-child(1) strong { font-size: clamp(20px, 2vw, 28px); letter-spacing: -0.5px; }
+.rise-board .rise-tile:nth-child(4) { grid-column: 2 / 4; }
+@media (max-width: 900px) {
+  .rise-board .rise-tile-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .rise-board .rise-tile:nth-child(1) { grid-row: auto; min-height: 91px; }
+  .rise-board .rise-tile:nth-child(4) { grid-column: auto; }
+}
+
+/* ─── 25. OVERVIEW BENTO ─────────────────────────────────────────────────── */
+.asset-feature.magic-card::before { opacity: 1; background-image: radial-gradient(circle, #ffffff0d 1px, transparent 1px); background-size: 24px 24px; }
+.overview-metrics { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 16px; }
+.asset-feature { min-height: 300px; display: flex; flex-direction: column; justify-content: space-between; }
+.asset-feature .asset-total { background: linear-gradient(180deg, #ffffff, #b9b6aa); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.summary-tile { min-height: 150px; display: flex; flex-direction: column; justify-content: space-between; }
+
+@media (prefers-reduced-motion: reduce) {
+  .beam-ring { animation: none !important; }
+  .magic-card, .btn.primary::before { transition: none !important; }
+}

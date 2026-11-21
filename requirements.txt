@@ -1,0 +1,8 @@
+fastapi==0.141.1
+starlette==1.6.0
+uvicorn==0.35.0
+httpx==0.28.1
+baostock==0.9.4
+pypdf==6.18.1
+cryptography==50.0.1
+PyMySQL[rsa]==1.2.3
